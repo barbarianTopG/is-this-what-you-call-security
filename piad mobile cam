@@ -1,12 +1,1669 @@
---[[
- .____                  ________ ___.    _____                           __                
- |    |    __ _______   \_____  \\_ |___/ ____\_ __  ______ ____ _____ _/  |_  ___________ 
- |    |   |  |  \__  \   /   |   \| __ \   __\  |  \/  ___// ___\\__  \\   __\/  _ \_  __ \
- |    |___|  |  // __ \_/    |    \ \_\ \  | |  |  /\___ \\  \___ / __ \|  | (  <_> )  | \/
- |_______ \____/(____  /\_______  /___  /__| |____//____  >\___  >____  /__|  \____/|__|   
-         \/          \/         \/    \/                \/     \/     \/                   
-          \_Welcome to LuaObfuscator.com   (Alpha 0.10.8) ~  Much Love, Ferib 
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+local Services = setmetatable({}, { __index = function(_,k) return game:GetService(k) end })
+local Players, RunService, Workspace = Services.Players, Services.RunService, Services.Workspace
+local TweenService, UserInputService = Services.TweenService, Services.UserInputService
+local LocalPlayer = Players.LocalPlayer
+local PathfindingService = Services.PathfindingService
+local Utility = {}
+local Character, Humanoid
+local enforceConnection, plotCon, autoResetCon, antiRagdollConn = nil, nil, nil, nil
+local canRunHub = false
+local lowGravityEnabled = false
+local godmode = false
+local infiniteJump = false
+local isActive = false
+local autoResetEnabled = false
+local notified = false
+local espPlayer = false
+local espPlot = false
+local function updateCharacterReferences()
+	Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+	Humanoid = Character:WaitForChild("Humanoid")
+	Humanoid:GetPropertyChangedSignal("Health"):Connect(function()
+		if godmode and Humanoid.Health < Humanoid.MaxHealth then
+			Humanoid.Health = Humanoid.MaxHealth
+		end
+	end)
+end
+updateCharacterReferences()
+local function startEnforceSpeed()
+	if not Humanoid then return end
+	enforceConnection = RunService.Heartbeat:Connect(function()
+		if Humanoid.WalkSpeed ~= 44 then
+			Humanoid.WalkSpeed = 44
+		end
+	end)
+	Humanoid:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+		if isActive and Humanoid.WalkSpeed ~= 44 then
+			Humanoid.WalkSpeed = 44
+		end
+	end)
+end
+local antiRagdollEnabled = false
+function Utility.runAntiRagdoll()
+    if not (Character and Humanoid) then return end
+    local r = Character:FindFirstChild("HumanoidRootPart")
+    if r then
+        for _, x in ipairs(Character:GetDescendants()) do
+            if x:IsA("BallSocketConstraint") or x:IsA("HingeConstraint") then
+                Humanoid.PlatformStand = true
+                r.Anchored = true
+                task.delay(1, function()
+                    if Humanoid then Humanoid.PlatformStand = false end
+                    if Character and r then r.Anchored = false end
+                end)
+                break
+            end
+        end
+    end
+end
+local function stopEnforceSpeed()
+	if enforceConnection then
+		enforceConnection:Disconnect()
+		enforceConnection = nil
+	end
+	if Humanoid then
+		Humanoid.WalkSpeed = 38
+	end
+end
+    local function applyLowGravity(c)
+        local h = c:WaitForChild("Humanoid")
+        h.UseJumpPower = false
+        h.JumpHeight = 40
 
-]]--
+        local r = c:WaitForChild("HumanoidRootPart")
+        local bf = Instance.new("BodyForce", r)
+        bf.Name = "LowGravityForce"
+        bf.Force = Vector3.new(0, workspace.Gravity * r.AssemblyMass * 0.75, 0)
+    end
 
-local v0=tonumber;local v1=string.byte;local v2=string.char;local v3=string.sub;local v4=string.gsub;local v5=string.rep;local v6=table.concat;local v7=table.insert;local v8=math.ldexp;local v9=getfenv or function() return _ENV;end ;local v10=setmetatable;local v11=pcall;local v12=select;local v13=unpack or table.unpack ;local v14=tonumber;local function v15(v16,v17,...) local v18=1;local v19;v16=v4(v3(v16,5),"..",function(v30) if (v1(v30,2)==81) then v19=v0(v3(v30,1,1));return "";else local v82=0;local v83;while true do if (v82==0) then v83=v2(v0(v30,16));if v19 then local v104=v5(v83,v19);v19=nil;return v104;else return v83;end break;end end end end);local function v20(v31,v32,v33) if v33 then local v84=(v31/((5 -(1640 -(1523 + 114)))^(v32-((2 + 0) -1))))%((3 -1)^(((v33-1) -(v32-(2 -1))) + (620 -(555 + 64)))) ;return v84-(v84%((1809 -(282 + 595)) -(857 + 74))) ;else local v85=(570 -(367 + 201))^(v32-(928 -((304 -90) + 713))) ;return (((v31%(v85 + v85))>=v85) and (1 + 0)) or (0 + 0) ;end end local function v21() local v34=v1(v16,v18,v18);v18=v18 + 1 ;return v34;end local function v22() local v35,v36=v1(v16,v18,v18 + (1067 -(68 + 997)) );v18=v18 + (1272 -(226 + 1044)) ;return (v36 * 256) + v35 ;end local function v23() local v37=(0 -0) -0 ;local v38;local v39;local v40;local v41;while true do if (v37==(118 -(32 + 85))) then return (v41 * ((16442165 -(87 + 263)) + 335401)) + (v40 * (14533 + (51183 -(67 + 113)))) + (v39 * (1213 -(892 + 65))) + v38 ;end if (v37==0) then v38,v39,v40,v41=v1(v16,v18,v18 + (7 -4) );v18=v18 + (6 -2) ;v37=1;end end end local function v24() local v42=0 + 0 ;local v43;local v44;local v45;local v46;local v47;local v48;while true do if (v42==((6 -4) -1)) then v45=1;v46=(v20(v44,1 + 0 + 0 ,20) * ((7 -5)^(984 -(802 + 150)))) + v43 ;v42=5 -3 ;end if (v42==(5 -2)) then if (v47==(0 + 0)) then if (v46==0) then return v48 * (997 -(915 + (144 -62))) ;else v47=2 -1 ;v45=0;end elseif (v47==((1631 -(145 + 293)) + 854)) then return ((v46==(0 -0)) and (v48 * (((1618 -(44 + 386)) -((2555 -(998 + 488)) + 118))/(0 -0)))) or (v48 * NaN) ;end return v8(v48,v47-(2237 -1214) ) * (v45 + (v46/(2^(10 + 42)))) ;end if (v42==0) then v43=v23();v44=v23();v42=1 -0 ;end if (v42==(2 + 0)) then v47=v20(v44,812 -(368 + 135 + 288) ,31);v48=((v20(v44,100 -68 )==1) and  -(19 -(10 + 8))) or (3 -2) ;v42=445 -(416 + 26) ;end end end local function v25(v49) local v50;if  not v49 then v49=v23();if (v49==0) then return "";end end v50=v3(v16,v18,(v18 + v49) -(1 + 0) );v18=v18 + v49 ;local v51={};for v66=773 -(201 + 571) , #v50 do v51[v66]=v2(v1(v3(v50,v66,v66)));end return v6(v51);end local v26=v23;local function v27(...) return {...},v12("#",...);end local function v28() local v52=(function() return 0;end)();local v53=(function() return;end)();local v54=(function() return;end)();local v55=(function() return;end)();local v56=(function() return;end)();local v57=(function() return;end)();local v58=(function() return;end)();local v59=(function() return;end)();while true do if ((1 -0)==v52) then local v89=(function() return 0 + 0 ;end)();while true do if (v89==(0 + 0)) then v57=(function() return {v54,v55,nil,v56};end)();v58=(function() return v23();end)();v89=(function() return 1 + 0 ;end)();end if (v89==(203 -(14 + 188))) then v59=(function() return {};end)();for v105= #"}",v58 do local v106=(function() return 675 -(534 + 141) ;end)();local v107=(function() return;end)();local v108=(function() return;end)();local v109=(function() return;end)();while true do if (v106==1) then v109=(function() return nil;end)();while true do if (v107==(0 + 0)) then local v166=(function() return 0 + 0 ;end)();while true do if (v166~=(1 + 0)) then else v107=(function() return 1 -0 ;end)();break;end if ((0 -0)==v166) then v108=(function() return v21();end)();v109=(function() return nil;end)();v166=(function() return 1;end)();end end end if (v107~=(1 -0)) then else if (v108== #">") then v109=(function() return v21()~=(1467 -(899 + 568)) ;end)();elseif (v108==(5 -3)) then v109=(function() return v24();end)();elseif (v108== #"19(") then v109=(function() return v25();end)();end v59[v105]=(function() return v109;end)();break;end end break;end if (v106==(0 + 0)) then v107=(function() return 0;end)();v108=(function() return nil;end)();v106=(function() return 604 -(268 + 335) ;end)();end end end v89=(function() return 2 + 0 ;end)();end if ((398 -(115 + 281))~=v89) then else v52=(function() return 2;end)();break;end end end if (v52==(0 -0)) then local v90=(function() return 572 -(426 + 146) ;end)();while true do if (v90~=1) then else v55=(function() return {};end)();v56=(function() return {};end)();v90=(function() return 2;end)();end if (v90~=(2 + 0)) then else v52=(function() return 1 + 0 ;end)();break;end if (v90~=0) then else v53=(function() return function(v110,v111,v112) local v113=(function() return 1456 -(282 + 1174) ;end)();local v114=(function() return;end)();while true do if (v113==(811 -(569 + 242))) then v114=(function() return 0 -0 ;end)();while true do if (v114==(0 -0)) then local v168=(function() return 0;end)();while true do if (v168==(0 + 0)) then v110[v111-#"!" ]=(function() return v112();end)();return v110,v111,v112;end end end end break;end end end;end)();v54=(function() return {};end)();v90=(function() return 868 -(550 + 317) ;end)();end end end if ((2 -0)~=v52) then else v57[ #"91("]=(function() return v21();end)();for v92= #",",v23() do local v93=(function() return v21();end)();if (v20(v93, #"[", #"<")==(1251 -(721 + 530))) then local v99=(function() return 0;end)();local v100=(function() return;end)();local v101=(function() return;end)();local v102=(function() return;end)();local v103=(function() return;end)();while true do if (v99==(1 -0)) then v102=(function() return nil;end)();v103=(function() return nil;end)();v99=(function() return 2;end)();end if (v99~=(0 -0)) then else local v131=(function() return 0;end)();while true do if (v131==(1 + 0)) then v99=(function() return 286 -(134 + 151) ;end)();break;end if (0==v131) then v100=(function() return 1665 -(970 + 695) ;end)();v101=(function() return nil;end)();v131=(function() return 1 -0 ;end)();end end end if (v99~=(1502 -(1408 + 92))) then else while true do if (v100==(1992 -(582 + 1408))) then local v157=(function() return 0 -0 ;end)();local v158=(function() return;end)();while true do if (v157==0) then v158=(function() return 0;end)();while true do if (v158~=(1 -0)) then else v100=(function() return  #"asd";end)();break;end if (v158==(0 -0)) then if (v20(v102, #"~", #"}")== #"{") then v103[2]=(function() return v59[v103[2]];end)();end if (v20(v102,1826 -(1195 + 629) ,2 -0 )~= #"\\") then else v103[ #"asd"]=(function() return v59[v103[ #"19("]];end)();end v158=(function() return 1;end)();end end break;end end end if (v100~=(0 + 0)) then else local v159=(function() return 0 + 0 ;end)();local v160=(function() return;end)();while true do if (v159~=(241 -(187 + 54))) then else v160=(function() return 0;end)();while true do if (0==v160) then v101=(function() return v20(v93,782 -(162 + 618) , #"xxx");end)();v102=(function() return v20(v93, #"0313",5 + 1 );end)();v160=(function() return 1 + 0 ;end)();end if (v160~=(1 -0)) then else v100=(function() return  #"[";end)();break;end end break;end end end if (v100== #"!") then local v161=(function() return 0 -0 ;end)();local v162=(function() return;end)();while true do if (v161==(0 + 0)) then v162=(function() return 1322 -(1249 + 73) ;end)();while true do if (v162~=(1636 -(1373 + 263))) then else v103=(function() return {v22(),v22(),nil,nil};end)();if (v101==(1145 -(466 + 679))) then local v177=(function() return 1000 -(451 + 549) ;end)();local v178=(function() return;end)();while true do if (v177==(0 -0)) then v178=(function() return 0 + 0 ;end)();while true do if ((1900 -(106 + 1794))~=v178) then else v103[ #"-19"]=(function() return v22();end)();v103[ #"xnxx"]=(function() return v22();end)();break;end end break;end end elseif (v101== #"\\") then v103[ #"asd"]=(function() return v23();end)();elseif (v101==(2 -0)) then v103[ #"xxx"]=(function() return v23() -(2^(6 + 10)) ;end)();elseif (v101== #"asd") then local v183=(function() return 0 -0 ;end)();local v184=(function() return;end)();while true do if (v183==0) then v184=(function() return 1384 -(746 + 638) ;end)();while true do if ((0 + 0)==v184) then v103[ #"-19"]=(function() return v23() -((116 -(4 + 110))^(23 -7)) ;end)();v103[ #".dev"]=(function() return v22();end)();break;end end break;end end end v162=(function() return 1428 -(41 + 1386) ;end)();end if (v162==(104 -(17 + 86))) then v100=(function() return 2 + 0 ;end)();break;end end break;end end end if (v100== #"gha") then if (v20(v102, #"asd", #"asd")== #">") then v103[ #"0313"]=(function() return v59[v103[ #".dev"]];end)();end v54[v92]=(function() return v103;end)();break;end end break;end end end end for v94= #"[",v23() do v55,v94,v28=(function() return v53(v55,v94,v28);end)();end return v57;end end end local function v29(v60,v61,v62) local v63=v60[1 + 0 ];local v64=v60[2];local v65=v60[(15 -9) -3 ];return function(...) local v68=v63;local v69=v64;local v70=v65;local v71=v27;local v72=(1229 -(322 + 905)) -1 ;local v73= -(167 -(122 + 44));local v74={};local v75={...};local v76=v12("#",...) -(1 -(611 -(602 + 9))) ;local v77={};local v78={};for v86=0 + (1189 -(449 + 740)) ,v76 do if ((v86>=v70) or (400>1111)) then v74[v86-v70 ]=v75[v86 + 1 ];else v78[v86]=v75[v86 + 1 + 0 ];end end local v79=(v76-v70) + (2 -(873 -(826 + 46))) ;local v80;local v81;while true do v80=v68[v72];v81=v80[3 -2 ];if ((3051>1005) and (v81<=(3 + (947 -(245 + 702))))) then if (v81<=(1 + 0)) then if ((3693<=4382) and (v81==(0 -0))) then v78[v80[2]]=v80[2 + 1 ];else local v117=v80[2 -0 ];local v118=v78[v80[68 -((94 -64) + 35) ]];v78[v117 + 1 + 0 ]=v118;v78[v117]=v118[v80[1261 -(1043 + 214) ]];end elseif ((v81>(7 -5)) or (3282>4100)) then v78[v80[1214 -(323 + 286 + 603) ]]=v62[v80[7 -4 ]];else local v124=580 -(361 + 219) ;local v125;local v126;local v127;local v128;while true do if (v124==(2 + (1898 -(260 + 1638)))) then for v164=v125,v73 do local v165=320 -(53 + (707 -(382 + 58))) ;while true do if ((v165==(0 + 0)) or (3580<2844)) then v128=v128 + (414 -(15 + 398)) ;v78[v164]=v126[v128];break;end end end break;end if (v124==(983 -(18 + 964))) then v73=(v127 + v125) -(3 -2) ;v128=0 + 0 ;v124=(6 -4) + 0 ;end if (v124==(850 -(20 + 830))) then v125=v80[2 + 0 + 0 ];v126,v127=v71(v78[v125](v13(v78,v125 + 1 + 0 ,v80[(266 -137) -(116 + 10) ])));v124=(2 -1) + 0 ;end end end elseif ((89<4490) and (v81<=5)) then if (v81==((1206 -(902 + 303)) + (5 -2))) then local v129=(4655 -2722) -(565 + 1368) ;local v130;while true do if ((v129==(738 -(542 + 196))) or (4983<1808)) then v130=v80[2];v78[v130]=v78[v130](v13(v78,v130 + (1 -0) ,v73));break;end end else do return;end end elseif (v81<=(7 -1)) then v78[v80[1 + 1 ]]();elseif (v81>(4 + 3)) then v78[v80[1 + 0 + 1 ]]={};else local v133;local v134,v135;local v136;local v137;v78[v80[4 -2 ]]={};v72=v72 + 1 ;v80=v68[v72];v78[v80[4 -2 ]]=v62[v80[1554 -(1126 + 425) ]];v72=v72 + 1 + 0 ;v80=v68[v72];v78[v80[(2097 -(1121 + 569)) -(118 + 287) ]]=v62[v80[11 -8 ]];v72=v72 + (1122 -((332 -(22 + 192)) + 1003)) ;v80=v68[v72];v137=v80[2];v136=v78[v80[8 -5 ]];v78[v137 + (1126 -(936 + (872 -(483 + 200)))) ]=v136;v78[v137]=v136[v80[381 -(142 + 235) ]];v72=v72 + (4 -3) ;v80=v68[v72];v78[v80[1 + 1 ]]=v80[980 -(553 + 424) ];v72=v72 + (1 -0) ;v80=v68[v72];v137=v80[4 -2 ];v134,v135=v71(v78[v137](v13(v78,v137 + 1 + 0 ,v80[3 + 0 ])));v73=(v135 + v137) -((1464 -(1404 + 59)) + 0) ;v133=0 + 0 ;for v155=v137,v73 do local v156=0;while true do if (v156==(0 + 0)) then v133=v133 + (2 -1) ;v78[v155]=v134[v133];break;end end end v72=v72 + (1019 -(697 + 321)) ;v80=v68[v72];v137=v80[5 -3 ];v78[v137]=v78[v137](v13(v78,v137 + (1 -(0 -0)) ,v73));v72=v72 + (2 -1) ;v80=v68[v72];v78[v80[1 + 1 ]]();v72=v72 + (1 -0) ;v80=v68[v72];do return;end end v72=v72 + 1 ;end end;end return v29(v28(),{},v17)(...);end return v15("LOL!043Q00030A3Q006C6F6164737472696E6703043Q0067616D6503073Q00482Q747047657403213Q00682Q7470733A2Q2F706173746562696E2E636F6D2F7261772F48634D4764776B7A00094Q00077Q00122Q000100013Q00122Q000200023Q00202Q00020002000300122Q000400046Q000200046Q00013Q00024Q0001000100016Q00017Q00",v9(),...);
+    local function removeLowGravity(c)
+        local h = c:FindFirstChild("Humanoid")
+        if h then h.JumpHeight = 7.2 end
+
+        local r = c:FindFirstChild("HumanoidRootPart")
+        if r then
+            local bf = r:FindFirstChild("LowGravityForce")
+            if bf then bf:Destroy() end
+        end
+    end
+
+    function Utility.enableLowGravity()
+        lowGravityEnabled = true
+        if Character then
+            applyLowGravity(Character)
+        end
+    end
+
+    function Utility.disableLowGravity()
+        lowGravityEnabled = false
+        if Character then
+            removeLowGravity(Character)
+        end
+      end
+local function killCharacter()
+	task.spawn(function()
+		local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+		local hum = char:FindFirstChildOfClass("Humanoid") or char:WaitForChild("Humanoid")
+		while hum and hum.Health > 0 do
+			hum.Health = 0
+			task.wait(0.01)
+		end
+	end)
+end
+local function getOwnPlot()
+    local plots = Workspace:FindFirstChild("Plots")
+    if not plots then return nil end
+    for _, plot in ipairs(plots:GetChildren()) do
+            for _, d in ipairs(plot:GetDescendants()) do
+            if d:IsA("TextLabel") and d.Text and d.Text:find(LocalPlayer.DisplayName) then
+                return plot
+            end
+        end
+        if plot.Name == LocalPlayer.Name or plot.Name == LocalPlayer.DisplayName then
+            return plot
+        end
+    end
+    return nil
+end
+
+local function checkAutoReset()
+	if not autoResetEnabled then return end
+
+	local plot = getOwnPlot()
+	if not plot then return end
+
+	local foundUnlocked = false
+
+	for _, d in ipairs(plot:GetDescendants()) do
+		if d:IsA("TextLabel") and d.Name == "LockStudio" then
+			if d.Visible then
+				if not notified then
+					notified = true
+					Utility.notify("<font color='rgb(255, 0, 0)'>Base Unlocked!</font>")
+				end
+				foundUnlocked = true
+			end
+		end
+	end
+
+	if not foundUnlocked then
+		notified = false
+	end
+end
+do
+    local parentGui = gethui()
+    local notifGui = parentGui:FindFirstChild("BubbleChatNotifications") or Instance.new("ScreenGui", parentGui)
+    notifGui.Name = "BubbleChatNotifications"; notifGui.ResetOnSpawn = false
+    local container = notifGui:FindFirstChild("NotificationContainer") or Instance.new("Frame", notifGui)
+    container.Name="NotificationContainer"; container.BackgroundTransparency=1
+    container.Size=UDim2.new(0,250,0,0); container.Position=UDim2.new(0,10,1,-10); container.AnchorPoint=Vector2.new(0,1)
+    local layout = container:FindFirstChildOfClass("UIListLayout") or Instance.new("UIListLayout",container)
+    layout.SortOrder=Enum.SortOrder.LayoutOrder; layout.Padding=UDim.new(0,8); layout.VerticalAlignment=Enum.VerticalAlignment.Bottom
+    layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        container.Size = UDim2.new(0,250,0,layout.AbsoluteContentSize.Y)
+    end)
+    function Utility.notify(text)
+        local f=Instance.new("Frame",container); f.Size=UDim2.new(1,0,0,4); f.BackgroundColor3=Color3.fromRGB(30,30,30)
+        f.BackgroundTransparency=0.5; f.BorderSizePixel=0; f.LayoutOrder=tick()
+        Instance.new("UICorner",f).CornerRadius=UDim.new(0,6); Instance.new("UIStroke",f).Color=Color3.new(0,0,0)
+        local tl=Instance.new("TextLabel",f); tl.BackgroundTransparency=1; tl.Position=UDim2.new(0,10,0,4)
+        tl.Size=UDim2.new(1,-20,0,18); tl.Font=Enum.Font.Gotham; tl.RichText=true
+        tl.Text="<font color='rgb(0,125,255)'>Jherus Cc</font> says:"; tl.TextColor3=Color3.new(1,1,1); tl.TextSize=12
+        tl.TextXAlignment=Enum.TextXAlignment.Left; tl.TextTransparency=1
+        local ml=Instance.new("TextLabel",f); ml.BackgroundTransparency=1; ml.Position=UDim2.new(0,10,0,26)
+        ml.Size=UDim2.new(1,-20,0,28); ml.Font=Enum.Font.Gotham; ml.RichText=true
+        ml.Text=text or "Notification"; ml.TextColor3=Color3.new(1,1,1); ml.TextSize=12; ml.TextWrapped=true
+        ml.TextXAlignment=Enum.TextXAlignment.Left; ml.TextTransparency=1
+        TweenService:Create(f,TweenInfo.new(0.4,Enum.EasingStyle.Quart,Enum.EasingDirection.Out),{Size=UDim2.new(1,0,0,60)}):Play()
+        task.delay(0.2,function()
+            TweenService:Create(tl,TweenInfo.new(0.4),{TextTransparency=0}):Play()
+            TweenService:Create(ml,TweenInfo.new(0.4),{TextTransparency=0}):Play()
+        end)
+        task.delay(5.5,function()
+            TweenService:Create(tl,TweenInfo.new(0.3),{TextTransparency=1}):Play()
+            TweenService:Create(ml,TweenInfo.new(0.3),{TextTransparency=1}):Play()
+            task.wait(0.3)
+            local tout=TweenService:Create(f,TweenInfo.new(0.3,Enum.EasingStyle.Quart,Enum.EasingDirection.In),{Size=UDim2.new(1,0,0,4)})
+            tout:Play(); tout.Completed:Wait(); f:Destroy()
+        end)
+    end
+end
+Utility.notify("<font color='rgb(102,255,0)'>Loading Steal A Brainrot Script.</font>")
+do
+    local stealGui
+    function Utility.stealButton()
+        if stealGui and stealGui.Parent then return stealGui end
+        stealGui = nil
+
+        local floatSpeed = 2
+        local moveSpeed = 40
+
+        local parent = (typeof(gethui) == "function" and gethui()) or LocalPlayer:WaitForChild("PlayerGui")
+        local sg = Instance.new("ScreenGui", parent)
+        sg.Name = "StealSwitchUI"
+        sg.IgnoreGuiInset = true
+        sg.ResetOnSpawn = false
+        sg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+        local frame = Instance.new("Frame", sg)
+        frame.Size = UDim2.new(0, 100, 0, 30)
+        frame.Position = UDim2.new(0.5, -50, 0.87, 0)
+        frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+        frame.Active = true
+        frame.Draggable = true
+
+        Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 8)
+        local stroke = Instance.new("UIStroke", frame)
+        stroke.Color = Color3.fromRGB(0, 170, 255)
+        stroke.Thickness = 1.5
+
+        local label = Instance.new("TextLabel", frame)
+        label.Size = UDim2.new(1, -40, 1, 0)
+        label.Position = UDim2.new(0, 8, 0, 0)
+        label.BackgroundTransparency = 1
+        label.Text = "Boost"
+        label.TextColor3 = Color3.new(1, 1, 1)
+        label.Font = Enum.Font.GothamSemibold
+        label.TextSize = 13
+        label.TextXAlignment = Enum.TextXAlignment.Left
+
+        local toggle = Instance.new("TextButton", frame)
+        toggle.Size = UDim2.new(0, 30, 0, 15)
+        toggle.Position = UDim2.new(1, -35, 0.5, -7)
+        toggle.BackgroundColor3 = Color3.fromRGB(30, 150, 255)
+        toggle.Text = ""
+        toggle.AutoButtonColor = false
+
+        Instance.new("UICorner", toggle).CornerRadius = UDim.new(1, 0)
+        local toggleStroke = Instance.new("UIStroke", toggle)
+        toggleStroke.Color = Color3.new(1, 1, 1)
+        toggleStroke.Thickness = 1
+
+        toggle.MouseButton1Click:Connect(function()
+            isActive = not isActive
+            toggle.BackgroundColor3 = isActive and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(30, 150, 255)
+            if isActive then startEnforceSpeed() else stopEnforceSpeed() end
+        end)
+
+        stealGui = sg
+        return stealGui
+    end
+end
+local trapConns = {}
+local function nukeSpecificTouchInterest(trap)
+	local open = trap:FindFirstChild("Open")
+	if open then
+		for _, child in ipairs(open:GetChildren()) do
+			if child.Name == "TouchInterest" then
+				child:Destroy()
+			end
+		end
+		if not trapConns[trap] then
+			trapConns[trap] = open.ChildAdded:Connect(function(c)
+				if c.Name == "TouchInterest" then
+					c:Destroy()
+				end
+			end)
+		end
+	end
+end
+
+local function scanTraps()
+	for _, trap in ipairs(workspace:GetChildren()) do
+		if trap.Name == "Trap" then
+			nukeSpecificTouchInterest(trap)
+		end
+	end
+end
+
+local trapLoop = nil
+
+local function toggleTrapTouchDestroyer(state)
+	if state then
+		if not trapLoop or not trapLoop.Connected then
+			trapLoop = RunService.Heartbeat:Connect(scanTraps)
+		end
+	else
+		if trapLoop then trapLoop:Disconnect() end
+		for _, conn in pairs(trapConns) do conn:Disconnect() end
+		table.clear(trapConns)
+	end
+end
+
+local Enabled, reached = false, false
+local Character, Humanoid, HRP, toggleButton
+local healthConn
+local function getDeliveryHitbox()
+    local plot = getOwnPlot()
+    if not plot then return end
+    for _, d in ipairs(plot:GetDescendants()) do
+        if d:IsA("BasePart") and d.Name == "DeliveryHitbox" then
+            return d
+        end
+    end
+end
+
+local lastNormalJump = tick()
+local normalJumpInterval = 3
+local function computeAvoidOffset()
+    if not Enabled then return Vector3.zero end
+    local steer = Vector3.zero
+
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+            local other = p.Character.HumanoidRootPart
+            local dist = (HRP.Position - other.Position).Magnitude
+
+            if dist < 12 then
+                local juke = nil
+                for _ = 1, 5 do
+                    local rand = math.random(1, 3)
+                    local dir = rand == 1 and HRP.CFrame.RightVector * 8 or rand == 2 and -HRP.CFrame.RightVector * 8 or -HRP.CFrame.LookVector * 6
+                    local result = Workspace:Raycast(HRP.Position, dir.Unit * 5, RaycastParams.new())
+                    if not result then
+                        juke = dir
+                        break
+                    end
+                end
+                if juke then steer += juke end
+
+                if math.random() < 0.3 then Humanoid:ChangeState(Enum.HumanoidStateType.Jumping) end
+
+                local backpack = p:FindFirstChildOfClass("Backpack")
+                local tool = p.Character:FindFirstChildOfClass("Tool") or (backpack and backpack:FindFirstChildOfClass("Tool"))
+                if tool then
+                    local name = tool.Name:lower()
+                    if name:find("medusa") or name:find("bat") or name:find("slap") or name:find("sword") then
+                        steer += -HRP.CFrame.LookVector * 10
+                        Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                        Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                    end
+                end
+            end
+        end
+    end
+
+    if tick() - lastNormalJump >= normalJumpInterval then
+        lastNormalJump = tick()
+        Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+    end
+
+    if steer.Magnitude > 15 then steer = steer.Unit * 15 end
+
+    return steer
+end
+
+local function monitorTouch(hitbox)
+    hitbox.Touched:Connect(function(part)
+        if part:IsDescendantOf(Character) then
+            reached = true
+            Enabled = false
+            Humanoid:Move(Vector3.zero)
+            toggleButton.Text = "Walk To Base: DONE"
+            if enforceConnection then enforceConnection:Disconnect() end
+        end
+    end)
+end
+
+local function maintainHealth()
+    if healthConn then healthConn:Disconnect() end
+    healthConn = RunService.Heartbeat:Connect(function()
+        if Humanoid and Humanoid.Health < Humanoid.MaxHealth then
+            Humanoid.Health = Humanoid.MaxHealth
+        end
+    end)
+end
+
+local function walkSmartTo(hitbox)
+    local path = PathfindingService:CreatePath({
+        AgentRadius = 2,
+        AgentHeight = 5,
+        AgentCanJump = true,
+        AgentJumpHeight = 15,
+        AgentMaxSlope = 45
+    })
+    path:ComputeAsync(HRP.Position, hitbox.Position + Vector3.new(0,3,0))
+    if path.Status ~= Enum.PathStatus.Success then return end
+
+    for _, wp in ipairs(path:GetWaypoints()) do
+        if reached or not Enabled then return end
+        local done = false
+        local conn = Humanoid.MoveToFinished:Connect(function() done = true end)
+        Humanoid:MoveTo(wp.Position)
+        while not done and not reached and Enabled and Humanoid.Health > 0 do
+            if not Enabled then
+                conn:Disconnect()
+                Humanoid:Move(Vector3.zero)
+                return
+            end
+            Humanoid.Health = Humanoid.MaxHealth
+            if math.abs(wp.Position.Y - HRP.Position.Y) <= 6 then
+                local offset = computeAvoidOffset()
+                if offset.Magnitude > 1 then
+                    local steer = wp.Position + offset + Vector3.new(math.random(-5,5),0,math.random(-5,5))
+                    Humanoid:MoveTo(steer)
+                    if offset.Magnitude < 12 then
+                        Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                    end
+                end
+            end
+            RunService.Heartbeat:Wait()
+        end
+        conn:Disconnect()
+    end
+end
+
+local function setupWalkToBaseHumanoid()
+	Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+	Humanoid = Character:WaitForChild("Humanoid")
+	HRP = Character:WaitForChild("HumanoidRootPart")
+
+	if enforceConnection then enforceConnection:Disconnect() end
+	enforceConnection = RunService.Heartbeat:Connect(function()
+		if Enabled then
+			if Humanoid.WalkSpeed ~= 44 then
+				Humanoid.WalkSpeed = 44
+			end
+			if Humanoid.Health < Humanoid.MaxHealth then
+				Humanoid.Health = Humanoid.MaxHealth
+			end
+		end
+	end)
+
+	Humanoid:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+		if Enabled and Humanoid.WalkSpeed ~= 44 then
+			Humanoid.WalkSpeed = 44
+		end
+	end)
+
+	Humanoid:GetPropertyChangedSignal("Health"):Connect(function()
+		if Enabled and Humanoid.Health < Humanoid.MaxHealth then
+			Humanoid.Health = Humanoid.MaxHealth
+		end
+	end)
+end
+
+local function runAI()
+	while true do
+		repeat RunService.Heartbeat:Wait() until Enabled
+
+		reached = false
+		setupWalkToBaseHumanoid()
+
+		local hitbox = getDeliveryHitbox()
+		if not hitbox then task.wait(1) continue end
+
+		monitorTouch(hitbox)
+		walkSmartTo(hitbox)
+
+		while Enabled and not reached and Humanoid and Humanoid.Health > 0 do
+			Humanoid.Health = Humanoid.MaxHealth
+			RunService.Heartbeat:Wait()
+		end
+	end
+end
+
+task.spawn(runAI)
+function Utility.walkToBaseButton()
+    if walkGui and walkGui.Parent then return walkGui end
+    walkGui = nil
+
+    local parent = (typeof(gethui) == "function" and gethui()) or LocalPlayer:WaitForChild("PlayerGui")
+    local gui = Instance.new("ScreenGui", parent)
+    gui.Name = "WalkToBaseUI"
+    gui.IgnoreGuiInset = true
+    gui.ResetOnSpawn = false
+    gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+    local frame = Instance.new("Frame", gui)
+    frame.Size = UDim2.new(0, 140, 0, 30)
+    frame.Position = UDim2.new(0.5, -70, 0.81, 0)
+    frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    frame.Active = true
+    frame.Draggable = true
+
+    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 8)
+    local stroke = Instance.new("UIStroke", frame)
+    stroke.Color = Color3.fromRGB(70, 130, 255)
+    stroke.Thickness = 2
+
+    local button = Instance.new("TextButton", frame)
+    button.Size = UDim2.new(1, 0, 1, 0)
+    button.BackgroundTransparency = 1
+    button.Font = Enum.Font.GothamBold
+    button.TextSize = 14
+    button.TextColor3 = Color3.new(1, 1, 1)
+    button.Text = "Walk To Base: OFF"
+
+    button.MouseButton1Click:Connect(function()
+    if toggleButton.Text == "Walk To Base: DONE" then return end
+    Enabled = not Enabled
+    reached = false
+    toggleButton.Text = Enabled and "Walk To Base: ON" or "Walk To Base: OFF"
+    end)
+
+    toggleButton = button
+    walkGui = gui
+    return gui
+end
+local resetGui
+local wasGodMode = false
+
+function Utility.smartResetButton()
+    if resetGui and resetGui.Parent then return resetGui end
+    resetGui = nil
+
+    local parent = (typeof(gethui) == "function" and gethui()) or LocalPlayer:WaitForChild("PlayerGui")
+    local sg = Instance.new("ScreenGui", parent)
+    sg.Name = "SmartResetUI"
+    sg.IgnoreGuiInset = true
+    sg.ResetOnSpawn = false
+    sg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+    local frame = Instance.new("Frame", sg)
+    frame.Size = UDim2.new(0, 100, 0, 30)
+    frame.Position = UDim2.new(0.5, -50, 0.87, 0)
+    frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    frame.Active = true
+    frame.Draggable = true
+
+    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 8)
+    local stroke = Instance.new("UIStroke", frame)
+    stroke.Color = Color3.fromRGB(255, 100, 100)
+    stroke.Thickness = 1.5
+
+    local label = Instance.new("TextLabel", frame)
+    label.Size = UDim2.new(1, -40, 1, 0)
+    label.Position = UDim2.new(0, 8, 0, 0)
+    label.BackgroundTransparency = 1
+    label.Text = "Reset"
+    label.TextColor3 = Color3.new(1, 1, 1)
+    label.Font = Enum.Font.GothamSemibold
+    label.TextSize = 13
+    label.TextXAlignment = Enum.TextXAlignment.Left
+
+    local toggle = Instance.new("TextButton", frame)
+    toggle.Size = UDim2.new(0, 30, 0, 15)
+    toggle.Position = UDim2.new(1, -35, 0.5, -7)
+    toggle.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+    toggle.Text = ""
+    toggle.AutoButtonColor = false
+
+    Instance.new("UICorner", toggle).CornerRadius = UDim.new(1, 0)
+    local toggleStroke = Instance.new("UIStroke", toggle)
+    toggleStroke.Color = Color3.new(1, 1, 1)
+    toggleStroke.Thickness = 1
+
+    toggle.MouseButton1Click:Connect(function()
+        wasGodMode = false
+        if godmode then
+            wasGodMode = true
+            godmode = false
+            if godmodeToggle then godmodeToggle:Set(false) end
+        end
+
+        local char = LocalPlayer.Character
+        if char and char:FindFirstChildOfClass("Humanoid") then
+            char.Humanoid.Health = 0
+        end
+    end)
+
+    LocalPlayer.CharacterAdded:Connect(function()
+        if wasGodMode then
+            godmode = true
+            if godmodeToggle then godmodeToggle:Set(true) end
+            wasGodMode = false
+        end
+    end)
+
+    resetGui = sg
+    return resetGui
+end
+local leaveGui
+
+function Utility.leaveButton()
+    if leaveGui and leaveGui.Parent then return leaveGui end
+    leaveGui = nil
+
+    local parent = (typeof(gethui) == "function" and gethui()) or LocalPlayer:WaitForChild("PlayerGui")
+    local sg = Instance.new("ScreenGui", parent)
+    sg.Name = "LeaveHelperUI"
+    sg.IgnoreGuiInset = true
+    sg.ResetOnSpawn = false
+    sg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+    local frame = Instance.new("Frame", sg)
+    frame.Size = UDim2.new(0, 100, 0, 30)
+    frame.Position = UDim2.new(0.5, -50, 0.87, 0)
+    frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    frame.Active = true
+    frame.Draggable = true
+
+    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 8)
+    local stroke = Instance.new("UIStroke", frame)
+    stroke.Color = Color3.fromRGB(255, 50, 50)
+    stroke.Thickness = 1.5
+
+    local label = Instance.new("TextLabel", frame)
+    label.Size = UDim2.new(1, -40, 1, 0)
+    label.Position = UDim2.new(0, 8, 0, 0)
+    label.BackgroundTransparency = 1
+    label.Text = "Leave"
+    label.TextColor3 = Color3.new(1, 1, 1)
+    label.Font = Enum.Font.GothamSemibold
+    label.TextSize = 13
+    label.TextXAlignment = Enum.TextXAlignment.Left
+
+    local toggle = Instance.new("TextButton", frame)
+    toggle.Size = UDim2.new(0, 30, 0, 15)
+    toggle.Position = UDim2.new(1, -35, 0.5, -7)
+    toggle.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+    toggle.Text = ""
+    toggle.AutoButtonColor = false
+
+    Instance.new("UICorner", toggle).CornerRadius = UDim.new(1, 0)
+    local toggleStroke = Instance.new("UIStroke", toggle)
+    toggleStroke.Color = Color3.new(1, 1, 1)
+    toggleStroke.Thickness = 1
+
+    toggle.MouseButton1Click:Connect(function()
+        game:Shutdown()
+    end)
+
+    leaveGui = sg
+    return leaveGui
+end
+local brainrotESP = {}
+local brainrotConnection = nil
+
+local raritySettings = {
+    ["Brainrot God"] = {Enabled = false, Color = Color3.fromRGB(0, 255, 255)},
+    ["Secret"]       = {Enabled = false, Color = Color3.fromRGB(0, 0, 0)},
+    ["Mythic"]       = {Enabled = false, Color = Color3.fromRGB(255, 0, 0)},
+    ["Legendary"]    = {Enabled = false, Color = Color3.fromRGB(255, 255, 0)},
+    ["Epic"]         = {Enabled = false, Color = Color3.fromRGB(128, 0, 128)},
+    ["Rare"]         = {Enabled = false, Color = Color3.fromRGB(0, 0, 255)},
+    ["Common"]       = {Enabled = false, Color = Color3.fromRGB(0, 255, 0)},
+}
+
+local function getOverheadAndRarity(podium)
+    local attach = podium:FindFirstChild("Base", true)
+    if attach then
+        local spawn = attach:FindFirstChild("Spawn", true)
+        if spawn then
+            local attachment = spawn:FindFirstChild("Attachment", true)
+            if attachment then
+                local overhead = attachment:FindFirstChild("AnimalOverhead", true)
+                if overhead then
+                    local displayName = overhead:FindFirstChild("DisplayName")
+                    local rarity = overhead:FindFirstChild("Rarity")
+                    if displayName and rarity then
+                        return displayName, rarity.Text
+                    end
+                end
+            end
+        end
+    end
+    return nil, nil
+end
+
+local function removeBrainrotESP(podium)
+    local esp = brainrotESP[podium]
+    if esp then
+        if esp.nameTag then esp.nameTag:Destroy() end
+        if esp.conn then esp.conn:Disconnect() end
+        brainrotESP[podium] = nil
+    end
+end
+
+local function createBrainrotESP(podium, displayName, rarity, color)
+    local base = podium:FindFirstChild("Base") or podium.PrimaryPart or podium:FindFirstChildWhichIsA("BasePart")
+    if not base then return end
+
+    local billboard = Instance.new("BillboardGui")
+    billboard.Adornee = base
+    billboard.Parent = base
+    billboard.AlwaysOnTop = true
+    billboard.Size = UDim2.new(0, 200, 0, 40)
+    billboard.StudsOffset = Vector3.new(0, 4, 0)
+    billboard.Name = "BrainrotESP"
+
+    local label = Instance.new("TextLabel")
+    label.Parent = billboard
+    label.Size = UDim2.new(1, 0, 1, 0)
+    label.BackgroundTransparency = 1
+    label.TextScaled = false
+    label.TextSize = 16
+    label.Font = Enum.Font.Gotham
+    label.TextColor3 = color
+    label.TextStrokeTransparency = 0.3
+    label.Text = displayName.Text
+
+    local conn = displayName:GetPropertyChangedSignal("Text"):Connect(function()
+        local newDisplay, newRarity = getOverheadAndRarity(podium)
+        local rs = raritySettings[newRarity]
+        if not newDisplay or not rs or not rs.Enabled then
+            removeBrainrotESP(podium)
+        else
+            local part = podium.PrimaryPart or podium:FindFirstChildWhichIsA("BasePart")
+            if part and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                local dist = (LocalPlayer.Character.HumanoidRootPart.Position - part.Position).Magnitude
+                label.Text = string.format("%s [%.0f]", newDisplay.Text, dist)
+            end
+        end
+    end)
+
+    brainrotESP[podium] = {
+        nameTag = billboard,
+        label = label,
+        displayName = displayName,
+        conn = conn
+    }
+end
+
+local function updateBrainrotESP()
+    for _, plot in ipairs(workspace.Plots:GetChildren()) do
+        local podiums = plot:FindFirstChild("AnimalPodiums")
+        if podiums then
+            for _, podium in ipairs(podiums:GetChildren()) do
+                local displayName, rarity = getOverheadAndRarity(podium)
+                local rs = raritySettings[rarity]
+                if displayName and rarity and rs and rs.Enabled then
+                    if not brainrotESP[podium] then
+                        createBrainrotESP(podium, displayName, rarity, rs.Color)
+                    end
+                else
+                    removeBrainrotESP(podium)
+                end
+            end
+        end
+    end
+    for podium, data in pairs(brainrotESP) do
+        if not podium.Parent then
+            removeBrainrotESP(podium)
+        elseif data.displayName and data.label then
+            local part = podium.PrimaryPart or podium:FindFirstChildWhichIsA("BasePart")
+            if part and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                local dist = (LocalPlayer.Character.HumanoidRootPart.Position - part.Position).Magnitude
+                data.label.Text = string.format("%s [%.0f]", data.displayName.Text, dist)
+            end
+        end
+    end
+end
+
+function StartBrainrotESP()
+    if brainrotConnection then return end
+    brainrotConnection = RunService.Heartbeat:Connect(updateBrainrotESP)
+end
+
+function StopBrainrotESP()
+    if brainrotConnection then
+        brainrotConnection:Disconnect()
+        brainrotConnection = nil
+    end
+    for podium in pairs(brainrotESP) do
+        removeBrainrotESP(podium)
+    end
+end
+local ReplicatedStorage = Services.ReplicatedStorage --pluh im lazy vro please continue pls plsplsplspslsplspslspslspslsllalaaaaaaa
+local Net = ReplicatedStorage.Packages.Net
+local RequestBuy = Net:FindFirstChild("RF/CoinsShopService/RequestBuy")
+
+local allItems = {
+    {Name = "Slap", ID = "Basic Slap"},
+    {Name = "Iron Slap", ID = "Iron Slap"},
+    {Name = "Gold Slap", ID = "Gold Slap"},
+    {Name = "Diamond Slap", ID = "Diamond Slap"},
+    {Name = "Emerald Slap", ID = "Emerald Slap"},
+    {Name = "Ruby Slap", ID = "Ruby Slap"},
+    {Name = "Dark Matter Slap", ID = "Dark Matter Slap"},
+    {Name = "Flame Slap", ID = "Flame Slap"},
+    {Name = "Nuclear Slap", ID = "Nuclear Slap"},
+    {Name = "Galaxy Slap", ID = "Galaxy Slap"},
+    {Name = "Trap", ID = "Trap"},
+    {Name = "Bee Launcher", ID = "Bee Launcher"},
+    {Name = "Rage Table", ID = "Rage Table"},
+    {Name = "Grapple Hook", ID = "Grapple Hook"},
+    {Name = "Taser Gun", ID = "Taser Gun"},
+    {Name = "Boogie Bomb", ID = "Boogie Bomb"},
+    {Name = "Medusa's Head", ID = "Medusa's Head"},
+    {Name = "Web Slinger", ID = "Web Slinger"},
+    {Name = "Quantum Cloner", ID = "Quantum Cloner"},
+    {Name = "All Seeing Sentry", ID = "All Seeing Sentry"},
+    {Name = "Laser Cape", ID = "Laser Cape"},
+    {Name = "Speed Coil", ID = "Speed Coil"},
+    {Name = "Gravity Coil", ID = "Gravity Coil"},
+    {Name = "Coil Combo", ID = "Coil Combo"},
+    {Name = "Invisibility Cloak", ID = "Invisibility Cloak"},
+    {Name = "Rainbowrath Sword",ID = "Rainbowrath Sword"}, 
+    {Name = "Laser Cape", ID = "Laser Cape"},
+    {Name = "Glitched Slap", ID = "Glitched Slap"},
+    {Name = "Body Swap Potion", ID = "Body Swap Potion"},
+    {Name = "Splatter Slap", ID = "Splatter Slap"},
+    {Name = "Paintball Gun", ID = "Paintball Gun"}
+}
+local itemNames = {}
+for _, item in ipairs(allItems) do
+    table.insert(itemNames, item.Name)
+end
+local espPlayers = {}
+local espPlots = {}
+
+local function removePlayerESP(player)
+	local esp = espPlayers[player]
+	if esp then
+		if esp.highlight then esp.highlight:Destroy() end
+		if esp.nameTag then esp.nameTag:Destroy() end
+		if esp.box then esp.box:Destroy() end
+		espPlayers[player] = nil
+	end
+end
+
+local function createPlayerESP(player)
+	if player == Players.LocalPlayer or espPlayers[player] or not espPlayer then return end
+	local character = player.Character
+	if not (character and character.Parent) then return end
+	local head = character:FindFirstChild("Head")
+	local hrp = character:FindFirstChild("HumanoidRootPart")
+	if not (head and hrp) then return end
+
+	local highlight = Instance.new("Highlight")
+	highlight.Adornee = character
+	highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+	highlight.FillTransparency = 0.5
+	highlight.OutlineTransparency = 1
+	highlight.FillColor = Color3.fromRGB(80, 170, 255)
+	highlight.Parent = character
+
+	local billboard = Instance.new("BillboardGui")
+	billboard.Adornee = head
+	billboard.AlwaysOnTop = true
+	billboard.Size = UDim2.new(0, 100, 0, 20)
+	billboard.StudsOffset = Vector3.new(0, 2.5, 0)
+	billboard.Name = "NameESP"
+	billboard.Parent = head
+
+	local nameLabel = Instance.new("TextLabel")
+	nameLabel.BackgroundTransparency = 1
+	nameLabel.Size = UDim2.new(1, 0, 1, 0)
+	nameLabel.Font = Enum.Font.GothamBold
+	nameLabel.TextScaled = true
+	nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+	nameLabel.TextStrokeTransparency = 0.5
+	nameLabel.Text = player.DisplayName
+	nameLabel.Parent = billboard
+
+	local box = Instance.new("BoxHandleAdornment")
+	box.Adornee = hrp
+	box.AlwaysOnTop = true
+	box.ZIndex = 5
+	box.Size = hrp.Size + Vector3.new(0.1, 0.1, 0.1)
+	box.Color3 = Color3.fromRGB(80, 170, 255)
+	box.Transparency = 0.3
+	box.Name = "HRPBox"
+	box.Parent = hrp
+
+	espPlayers[player] = {
+		highlight = highlight,
+		nameTag = billboard,
+		box = box
+	}
+end
+
+local function updateESPState()
+	if not espPlayer then
+		for player in pairs(espPlayers) do
+			removePlayerESP(player)
+		end
+	else
+		for _, p in ipairs(Players:GetPlayers()) do
+			if not espPlayers[p] then
+				createPlayerESP(p)
+			end
+		end
+	end
+end
+
+for _, p in ipairs(Players:GetPlayers()) do
+	p.CharacterAdded:Connect(function()
+		task.wait(1)
+		removePlayerESP(p)
+		createPlayerESP(p)
+	end)
+	if p.Character then
+		createPlayerESP(p)
+	end
+end
+
+Players.PlayerAdded:Connect(function(p)
+	p.CharacterAdded:Connect(function()
+		task.wait(1)
+		removePlayerESP(p)
+		createPlayerESP(p)
+	end)
+end)
+
+Players.PlayerRemoving:Connect(removePlayerESP)
+
+LocalPlayer.CharacterAdded:Connect(function()
+	for p in pairs(espPlayers) do
+		removePlayerESP(p)
+	end
+end)
+
+local function isValidPlot(plot)
+	local block = plot:FindFirstChild("Purchases") and plot.Purchases:FindFirstChild("PlotBlock")
+	local main = block and block:FindFirstChild("Main")
+	local gui = main and main:FindFirstChild("BillboardGui")
+	return main, gui
+end
+
+local function getPlotOwnerText(plot)
+	local s = plot:FindFirstChild("PlotSign")
+	local sg = s and s:FindFirstChild("SurfaceGui")
+	local f = sg and sg:FindFirstChild("Frame")
+	local lbl = f and f:FindFirstChild("TextLabel")
+	local txt = lbl and lbl.Text
+	if not txt or txt:find("Empty Base") then return nil end
+	return txt:match("^(.-)'s Base$") or nil
+end
+
+local function createPlotESP(plot, owner, main, gui, lock, remaining)
+	local espGui = Instance.new("BillboardGui")
+	espGui.Adornee = main
+	espGui.Parent = main
+	espGui.Size = UDim2.new(0, 200, 0, 32)
+	espGui.StudsOffset = Vector3.new(0, 30, 0)
+	espGui.AlwaysOnTop = true
+
+	local label = Instance.new("TextLabel")
+	label.Parent = espGui
+	label.Size = UDim2.new(1, 0, 1, 0)
+	label.BackgroundTransparency = 1
+	label.TextScaled = false
+	label.TextSize = 15
+	label.Font = Enum.Font.GothamBold
+	label.TextColor3 = Color3.new(1, 1, 1)
+	label.Text = owner .. " | ..."
+	label.TextWrapped = true
+
+	espPlots[plot] = {
+		gui = espGui,
+		label = label,
+		remaining = remaining,
+		lock = lock,
+		owner = owner
+	}
+end
+
+local function destroyPlotESP(plot)
+	local data = espPlots[plot]
+	if data then
+		if data.gui then data.gui:Destroy() end
+		espPlots[plot] = nil
+	end
+end
+
+local function updatePlots()
+	local plotsFolder = Workspace:FindFirstChild("Plots")
+	if not plotsFolder then return end
+
+	for _, plot in ipairs(plotsFolder:GetChildren()) do
+		local owner = getPlotOwnerText(plot)
+		local hasESP = espPlots[plot]
+
+		if owner then
+			local main, gui = isValidPlot(plot)
+			if not main or not gui then continue end
+
+			local lock = gui:FindFirstChild("LockStudio")
+			local remaining = gui:FindFirstChild("RemainingTime")
+			if not lock or not remaining then continue end
+
+			if not hasESP then
+				createPlotESP(plot, owner, main, gui, lock, remaining)
+			else
+				local data = espPlots[plot]
+				if data.owner ~= owner then
+					destroyPlotESP(plot)
+					createPlotESP(plot, owner, main, gui, lock, remaining)
+				elseif data.lock.Visible then
+					data.label.Text = data.owner .. " | UNLOCKED!"
+					data.label.TextColor3 = Color3.fromRGB(0, 255, 0)
+				else
+					data.label.Text = data.owner .. " | Time: " .. (data.remaining.Text or "?")
+					data.label.TextColor3 = Color3.fromRGB(255, 50, 50)
+				end
+			end
+		elseif hasESP then
+			destroyPlotESP(plot)
+		end
+	end
+end
+
+function Utility.startPlotESP()
+	if not plotCon then
+		plotCon = RunService.Heartbeat:Connect(updatePlots)
+	end
+end
+
+function Utility.stopPlotESP()
+	if plotCon then
+		plotCon:Disconnect()
+		plotCon = nil
+	end
+	for plot, d in pairs(espPlots) do
+		if d.gui then d.gui:Destroy() end
+		espPlots[plot] = nil
+	end
+end
+
+LocalPlayer.CharacterAdded:Connect(function()
+	task.wait(0.1)
+	updateCharacterReferences()
+	if isActive then
+		startEnforceSpeed()
+	end
+	if lowGravityEnabled then
+		task.delay(0.1, function()
+			applyLowGravity(Character)
+		end)
+	end
+end)
+function Utility.getOwnPlot()
+    return getOwnPlot()
+end
+function Utility.updateESPState()
+    return updateESPState()
+end
+function Utility.updatePlots()
+    return updatePlots()
+end
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+local function teleportToSky()
+local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local rootPart = character:WaitForChild("HumanoidRootPart")
+rootPart.CFrame = rootPart.CFrame + Vector3.new(0, 180, 0)  
+rootPart.Anchored = true  
+task.wait(1)  
+rootPart.Anchored = false
+end
+local function tweenToBase()
+local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local rootPart = character:WaitForChild("HumanoidRootPart")
+local deliveryHitbox = getDeliveryHitbox()  
+if not deliveryHitbox then  
+    warn("No DeliveryHitbox found!")  
+    rootPart.Anchored = false  
+    return  
+end  
+
+local targetPos = deliveryHitbox.Position + Vector3.new(0, 5, 0)  
+local currentPos = rootPart.Position  
+local halfwayPos = currentPos + ((targetPos - currentPos) * 0.5)  
+local driftGoal = {  
+    CFrame = CFrame.new(halfwayPos)  
+}  
+local driftTween = TweenService:Create(  
+    rootPart,  
+    TweenInfo.new(1, Enum.EasingStyle.Linear),  
+    driftGoal  
+)  
+driftTween:Play()  
+driftTween.Completed:Connect(function()  
+    rootPart.Anchored = false  
+end)
+end
+local translations = {
+["en"] = {
+Title = "Steal Helper",
+Teleport = "Teleport To Sky",
+Tween = "Tween To Base",
+Warning = "Please click Tween To Base ONLY when you're on top of your base."
+},
+["id"] = {
+Title = "Pembantu Mencuri",
+Teleport = "Teleport ke Langit",
+Tween = "Tween ke Base",
+Warning = "Klik Tween ke Base HANYA saat kamu di atas base-mu."
+},
+["vi"] = {
+Title = "CÃ´ng Cá»¥ Bay & Vá» CÄƒn Cá»©",
+Teleport = "Dá»‹ch Chuyá»ƒn LÃªn Trá»i",
+Tween = "Tween Vá» CÄƒn Cá»©",
+Warning = "Chá»‰ báº¥m Tween Vá» CÄƒn Cá»© khi báº¡n Ä‘ang á»Ÿ trÃªn cÄƒn cá»©."
+}
+}
+
+local localeId = LocalPlayer.LocaleId:lower()
+local langCode = localeId:split("-")[1]
+local t = translations[langCode] or translations["en"]
+local stealhelper
+function Utility.StealHelper()
+if stealhelper and stealhelper.Parent then return end
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "SkyBaseUI"
+ScreenGui.Parent = PlayerGui
+ScreenGui.ResetOnSpawn = false
+stealhelper = ScreenGui
+local Frame = Instance.new("Frame")
+Frame.Size = UDim2.new(0, 260, 0, 180)
+Frame.Position = UDim2.new(0.5, -130, 0.5, -90)
+Frame.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
+Frame.Active = true
+Frame.Draggable = true
+Frame.Parent = ScreenGui
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 12)
+UICorner.Parent = Frame
+
+local UIStroke = Instance.new("UIStroke")
+UIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+UIStroke.Color = Color3.fromRGB(60, 60, 70)
+UIStroke.Thickness = 2
+UIStroke.Parent = Frame
+
+local TitleLabel = Instance.new("TextLabel")
+TitleLabel.Size = UDim2.new(1, 0, 0, 30)
+TitleLabel.Position = UDim2.new(0, 0, 0, 0)
+TitleLabel.BackgroundTransparency = 1
+TitleLabel.Text = t.Title
+TitleLabel.Font = Enum.Font.GothamSemibold
+TitleLabel.TextSize = 16
+TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleLabel.Parent = Frame
+
+local InfoLabel = Instance.new("TextLabel")
+InfoLabel.Size = UDim2.new(1, -20, 0, 40)
+InfoLabel.Position = UDim2.new(0, 10, 0, 30)
+InfoLabel.BackgroundTransparency = 1
+InfoLabel.Text = t.Warning
+InfoLabel.Font = Enum.Font.Gotham
+InfoLabel.TextWrapped = true
+InfoLabel.TextSize = 12
+InfoLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+InfoLabel.TextYAlignment = Enum.TextYAlignment.Top
+InfoLabel.Parent = Frame
+
+local TPButton = Instance.new("TextButton")
+TPButton.Size = UDim2.new(1, -40, 0, 35)
+TPButton.Position = UDim2.new(0, 20, 0, 80)
+TPButton.Text = t.Teleport
+TPButton.BackgroundColor3 = Color3.fromRGB(70, 130, 180)
+TPButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+TPButton.Font = Enum.Font.Gotham
+TPButton.TextSize = 14
+TPButton.Parent = Frame
+
+local TPButtonCorner = Instance.new("UICorner")
+TPButtonCorner.CornerRadius = UDim.new(0, 8)
+TPButtonCorner.Parent = TPButton
+
+local TweenButton = Instance.new("TextButton")
+TweenButton.Size = UDim2.new(1, -40, 0, 35)
+TweenButton.Position = UDim2.new(0, 20, 0, 125)
+TweenButton.Text = t.Tween
+TweenButton.BackgroundColor3 = Color3.fromRGB(46, 204, 113)
+TweenButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+TweenButton.Font = Enum.Font.Gotham
+TweenButton.TextSize = 14
+TweenButton.Parent = Frame
+
+local TweenButtonCorner = Instance.new("UICorner")
+TweenButtonCorner.CornerRadius = UDim.new(0, 8)
+TweenButtonCorner.Parent = TweenButton
+
+local FooterLabel = Instance.new("TextLabel")
+FooterLabel.Size = UDim2.new(1, -20, 0, 20)
+FooterLabel.Position = UDim2.new(0, 10, 1, -20)
+FooterLabel.BackgroundTransparency = 1
+FooterLabel.Text = "Free by Prostone"
+FooterLabel.Font = Enum.Font.GothamSemibold
+FooterLabel.TextSize = 12
+FooterLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
+FooterLabel.TextYAlignment = Enum.TextYAlignment.Center
+FooterLabel.TextXAlignment = Enum.TextXAlignment.Right
+FooterLabel.Parent = Frame
+
+local function addHover(button, hoverColor)
+local originalColor = button.BackgroundColor3
+button.MouseEnter:Connect(function()
+button.BackgroundColor3 = hoverColor
+end)
+button.MouseLeave:Connect(function()
+button.BackgroundColor3 = originalColor
+end)
+end
+
+addHover(TPButton, Color3.fromRGB(100, 160, 210))
+addHover(TweenButton, Color3.fromRGB(76, 224, 143))
+
+TPButton.MouseButton1Click:Connect(teleportToSky)
+TweenButton.MouseButton1Click:Connect(tweenToBase)
+return stealhelper
+end
+local W=WindUI:CreateWindow{Title="Steal A Brainrot | Free by Prostone",Icon="sparkles",IconThemed=true,Author="Free by Prostone",Folder="Free by Prostone",Theme="Dark",Transparent=true,Size=UDim2.fromOffset(600,300),Configuration={Enabled=True,FileName="stealabrainrot"},Discord={Enabled=true,Invite="N3eDFJ9UCF"},KeySystem=false}
+local Tab=W:Tab{Title="Main",Icon="house"}
+local shop = W:Tab{Title = "Steal", Icon = "ninja"}
+local T2 = W:Tab{Title="Visuals",Icon="scan-eye"}
+espPlayerToggle = T2:Toggle{
+    Title   = "Player ESP",
+    Value   = false,
+    Config  = "Playeresp",
+    Callback = function(v)
+        espPlayer = v
+        Utility.updateESPState()
+    end
+}
+espPlotToggle = T2:Toggle{
+    Title   = "Plot ESP",
+    Value   = false,
+    Config  = "plotesp",
+    Callback = function(v)
+        espPlot = v
+        if v then Utility.startPlotESP() else Utility.stopPlotESP() end
+    end
+}
+T2:Section{Title = "Brainrot ESP"}
+commonToggle = T2:Toggle{
+    Title   = "Common",
+    Value   = false,
+    Config  = "commonesp",
+    Callback = function(v)
+        raritySettings["Common"].Enabled = v
+        if v then StartBrainrotESP() end
+    end
+}
+rareToggle = T2:Toggle{
+    Title   = "Rare",
+    Value   = false,
+    Config  = "rareesp",
+    Callback = function(v)
+        raritySettings["Rare"].Enabled = v
+        if v then StartBrainrotESP() end
+    end
+}
+epicToggle = T2:Toggle{
+    Title   = "Epic",
+    Value   = false,
+    Config  = "epicesp",
+    Callback = function(v)
+        raritySettings["Epic"].Enabled = v
+        if v then StartBrainrotESP() end
+    end
+}
+legendaryToggle = T2:Toggle{
+    Title   = "Legendary",
+    Value   = false,
+    Config  = "legenesp",
+    Callback = function(v)
+        raritySettings["Legendary"].Enabled = v
+        if v then StartBrainrotESP() end
+    end
+}
+mythicToggle = T2:Toggle{
+    Title   = "Mythic",
+    Value   = false,
+    Config  = "mythesp",
+    Callback = function(v)
+        raritySettings["Mythic"].Enabled = v
+        if v then StartBrainrotESP() end
+    end
+}
+godToggle = T2:Toggle{
+    Title   = "Brainrot God",
+    Value   = false,
+    Config  = "godesp",
+    Callback = function(v)
+        raritySettings["Brainrot God"].Enabled = v
+        if v then StartBrainrotESP() end
+    end
+}
+secretToggle = T2:Toggle{
+    Title   = "Secret",
+    Value   = false,
+    Config  = "secretesp",
+    Callback = function(v)
+        raritySettings["Secret"].Enabled = v
+        if v then StartBrainrotESP() end
+    end
+}
+Tab:Section{Title = "Bypasser"}
+godmodeToggle = Tab:Toggle{
+    Title    = "Bypass",
+    Value    = false,
+    Config   = "god",
+    Desc    = "It bypass the anti cheat",
+    Callback = function(v)
+        godmode = v
+    end
+}
+smartResetToggle = Tab:Toggle{
+    Title = "Base Button",
+    Value = false,
+    Config = "smartreset",
+    Desc    = "It reset you back to base if u get stuck!",
+    Callback = function(v)
+        if v then
+            resetGui = Utility.smartResetButton()
+        else
+            if resetGui then
+                resetGui:Destroy()
+                resetGui = nil
+            end
+        end
+    end
+}
+Tab:Section{Title = "Self Modification"}
+antiRagdollToggle = Tab:Toggle{
+    Title   = "Anti Ragdoll",
+    Value   = false,
+    Config  = "ragdoll",
+    Callback = function(v)
+        antiRagdollEnabled = v
+    end
+}
+infjumpToggle = Tab:Toggle{
+    Title    = "Infinite Jump",
+    Value    = false,
+    Config   = "infjump",
+    Callback = function(v)
+        infiniteJump = v
+    end
+}
+shop:Dropdown({
+    Title = "Buy Item",
+    Desc = "Select an item to buy",
+    Values = itemNames,
+    Default = itemNames[1],
+    Callback = function(selected)
+        for _, item in ipairs(allItems) do
+            if item.Name == selected then
+                local success, result = pcall(function()
+                    return RequestBuy:InvokeServer(item.ID)
+                end)
+                if success then
+                    Utility.notify("<font color='rgb(0, 255, 0)'>[âœ”] Successfully bought:</font> " .. selected)
+                else
+                    Utility.notify("<font color='rgb(255, 0, 0)'>[âœ–] Error buying:</font> " .. tostring(result))
+                end
+                break
+            end
+        end
+    end
+})
+local HttpService = game:GetService("HttpService")
+local ConfigManager = W.ConfigManager
+local baseDir = "WindUI/" .. W.Folder .. "/config/"
+local autoFile = baseDir .. "__auto.json"
+if not isfolder("WindUI") then makefolder("WindUI") end
+if not isfolder("WindUI/" .. W.Folder) then makefolder("WindUI/" .. W.Folder) end
+if not isfolder(baseDir) then makefolder(baseDir) end
+local CurrentName = ""
+local AutoLoad = false
+
+local function RegisterAll(cfg)
+    if not espPlayerToggle then
+        task.spawn(function()
+            repeat task.wait() until espPlayerToggle and godmodeToggle and infjumpToggle and walkButtonToggle
+            RegisterAll(cfg)
+        end)
+        return
+    end
+
+    cfg:Register("Playeresp", espPlayerToggle)
+    cfg:Register("plotesp", espPlotToggle)
+    cfg:Register("commonesp", commonToggle)
+    cfg:Register("rareesp", rareToggle)
+    cfg:Register("epicesp", epicToggle)
+    cfg:Register("legenesp", legendaryToggle)
+    cfg:Register("mythesp", mythicToggle)
+    cfg:Register("godesp", godToggle)
+    cfg:Register("secretesp", secretToggle)
+    cfg:Register("ragdoll", antiRagdollToggle)
+    cfg:Register("god", godmodeToggle)
+    cfg:Register("infjump", infjumpToggle)
+    cfg:Register("basebutton", walkButtonToggle)
+    cfg:Register("booststealbttn", boostButtonToggle)
+    cfg:Register("boostjmp", boostJumpToggle)
+    cfg:Register("notifyunlck", autoNotifyToggle)
+    cfg:Register("disabletrap", disableTrapToggle)
+    cfg:Register("smartreset", smartResetToggle)
+    cfg:Register("leavehelper", leaveGuiToggle)
+    cfg:Register("semiinstant", stealhelping)
+end
+shop:Section{Title = "Steal Menu"}
+walkButtonToggle = Tab:Toggle{
+    Title   = "Show Walk To Base Button [BETA]",
+    Value   = false,
+    Config  = "basebutton",
+    Desc    = "This not only walk normally but with Automation of Avoidance!",
+    Callback = function(v)
+        if v then
+            walkGui = Utility.walkToBaseButton()
+        else
+            if walkGui then
+                walkGui:Destroy()
+                walkGui = nil
+            end
+        end
+    end
+}
+boostButtonToggle = shop:Toggle{
+    Title    = "Show Boost Steal Button",
+    Value    = false,
+    Config   = "booststealbttn",
+    Callback = function(v)
+        if v then
+            stealGui = Utility.stealButton()
+        else
+            if stealGui then
+                stealGui:Destroy()
+                stealGui = nil
+            end
+        end
+    end
+}
+local stealGui
+stealhelping = shop:Toggle{
+    Title    = "Show Semi Instant Steal Button",
+    Value    = false,
+    Config   = "semiinstant",
+    Callback = function(v)
+        if v then
+            stealGui = Utility.StealHelper()
+        else
+            if stealGui then
+                stealGui:Destroy()
+                stealGui = nil
+            end
+        end
+    end
+}
+boostJumpToggle = shop:Toggle{
+    Title    = "Boost Jumppower",
+    Value    = false,
+    Config   = "boostjmp",
+    Callback = function(v)
+        if v then Utility.enableLowGravity() else Utility.disableLowGravity() end
+    end
+}
+shop:Section{Title = "Miscellaneous"}
+autoNotifyToggle = shop:Toggle{
+    Title    = "Auto Notify on Unlock",
+    Value    = false,
+    Config   = "notifyunlck",
+    Callback = function(v)
+        autoResetEnabled = v
+        if not v then notified = false end
+    end
+}
+leaveGuiToggle = soon:Toggle{
+    Title = "Show Leave Button",
+    Value = false,
+    Config = "leavehelper",
+    Callback = function(v)
+        if v then
+            leaveGui = Utility.leaveButton()
+        else
+            if leaveGui then
+                leaveGui:Destroy()
+                leaveGui = nil
+            end
+        end
+    end
+}
+disableTrapToggle = shop:Toggle{
+    Title    = "Disable Trap",
+    Value    = false,
+    Config   = "disabletrap",
+    Callback = function(v)
+        toggleTrapTouchDestroyer(v)
+    end
+}
+
+local cfgTab = W:Tab({ Title = "Configs" })
+
+local cfgDropdown = cfgTab:Dropdown({
+    Title = "Select Config",
+    Desc = "Pick a saved config",
+    Values = ConfigManager:AllConfigs(),
+    Value = "",
+    Callback = function(name)
+        if name and name ~= "" then
+            writefile(autoFile, HttpService:JSONEncode({ last = name }))
+
+            if AutoLoad then
+                local cfg = ConfigManager:CreateConfig(name)
+                RegisterAll(cfg)
+                task.wait(0.1)
+                local ok, raw = pcall(readfile, cfg.Path)
+                if ok and raw ~= "" then
+                    local ok2, data = pcall(HttpService.JSONDecode, HttpService, raw)
+                    if ok2 and data and data.Elements then
+                        cfg:Load()
+                    end
+                end
+            end
+        end
+    end
+})
+
+local nameInput = cfgTab:Input({
+    Title = "Config Name",
+    Placeholder = "Type a name",
+    Default = "",
+    Callback = function(txt) CurrentName = txt or "" end
+})
+
+cfgTab:Button({
+    Title = "Save New",
+    Callback = function()
+        if CurrentName ~= "" then
+            local cfg = ConfigManager:CreateConfig(CurrentName)
+            RegisterAll(cfg)
+            cfg:Save()
+            cfgDropdown:Refresh(ConfigManager:AllConfigs())
+            cfgDropdown:Select(CurrentName)
+        end
+    end
+})
+
+cfgTab:Button({
+    Title = "Load",
+    Callback = function()
+        local sel = cfgDropdown.Value
+        if sel and sel ~= "" then
+            local cfg = ConfigManager:CreateConfig(sel)
+            RegisterAll(cfg)
+            task.wait(0.1)
+            local ok, raw = pcall(readfile, cfg.Path)
+            if ok and raw ~= "" then
+                local ok2, data = pcall(HttpService.JSONDecode, HttpService, raw)
+                if ok2 and data and data.Elements then
+                    cfg:Load()
+                end
+            end
+        end
+    end
+})
+
+cfgTab:Toggle({
+    Title = "Auto Load",
+    Value = false,
+    Callback = function(v)
+        AutoLoad = v
+    end
+})
+
+cfgTab:Button({
+    Title = "Update",
+    Callback = function()
+        if cfgDropdown.Value ~= "" then
+            local cfg = ConfigManager:CreateConfig(cfgDropdown.Value)
+            RegisterAll(cfg)
+            cfg:Save()
+        end
+    end
+})
+
+cfgTab:Button({
+    Title = "Rename",
+    Callback = function()
+        local old = cfgDropdown.Value
+        local new = CurrentName
+        if old and old ~= "" and new and new ~= "" then
+            local oldPath = "WindUI/" .. W.Folder .. "/config/" .. old .. ".json"
+            local newPath = "WindUI/" .. W.Folder .. "/config/" .. new .. ".json"
+            if isfile(oldPath) then
+                writefile(newPath, readfile(oldPath))
+                delfile(oldPath)
+                cfgDropdown:Refresh(ConfigManager:AllConfigs())
+                cfgDropdown:Select(new)
+                writefile(autoFile, HttpService:JSONEncode({ last = new }))
+            end
+        end
+    end
+})
+
+cfgTab:Button({
+    Title = "Delete",
+    Callback = function()
+        local sel = cfgDropdown.Value
+        if sel and sel ~= "" then
+            local path = "WindUI/" .. W.Folder .. "/config/" .. sel .. ".json"
+            if isfile(path) then delfile(path) end
+            cfgDropdown:Refresh(ConfigManager:AllConfigs())
+        end
+    end
+})
+
+cfgTab:Button({
+    Title = "Refresh",
+    Callback = function()
+        cfgDropdown:Refresh(ConfigManager:AllConfigs())
+    end
+})
+
+local ok, raw = pcall(readfile, autoFile)
+if ok and raw ~= "" then
+    local succ, dat = pcall(HttpService.JSONDecode, HttpService, raw)
+    if succ and dat and dat.last then
+        cfgDropdown:Select(dat.last)
+        local cfg = ConfigManager:CreateConfig(dat.last)
+        RegisterAll(cfg)
+        task.wait(0.1)
+        local ok2, raw2 = pcall(readfile, cfg.Path)
+        if ok2 and raw2 ~= "" then
+            local ok3, dat2 = pcall(HttpService.JSONDecode, HttpService, raw2)
+            if ok3 and dat2 and dat2.Elements then
+                cfg:Load()
+                AutoLoad = true
+            end
+        end
+    end
+end
+task.wait(2)
+Utility.notify("<font color='rgb(102,255,0)'>Script Loaded Successfully.</font>")
+RunService.Heartbeat:Connect(function()
+	Character = LocalPlayer.Character
+	Humanoid = Character and Character:FindFirstChildOfClass("Humanoid")
+	if not Humanoid then return end
+
+	if isActive and Humanoid.WalkSpeed ~= 44 then
+		Humanoid.WalkSpeed = 44
+	end
+
+	if godmode and Humanoid.Health < Humanoid.MaxHealth then
+		Humanoid.Health = Humanoid.MaxHealth
+	end
+
+	if antiRagdollEnabled then
+		Utility.runAntiRagdoll()
+	end
+
+	if espPlayer then
+		Utility.updateESPState()
+	end
+
+	if espPlot then
+		Utility.updatePlots()
+	end
+
+	if autoResetEnabled then
+		checkAutoReset()
+	end
+end)
+UserInputService.JumpRequest:Connect(function()
+    if infiniteJump and Humanoid and Humanoid:GetState() ~= Enum.HumanoidStateType.Seated then
+        Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+        local HRP = Humanoid.Parent:FindFirstChild("HumanoidRootPart")
+        if HRP then
+            HRP.AssemblyLinearVelocity = Vector3.new(HRP.AssemblyLinearVelocity.X, 50, HRP.AssemblyLinearVelocity.Z)
+            task.wait(0.03)
+            HRP.AssemblyLinearVelocity = Vector3.new(HRP.AssemblyLinearVelocity.X, 50, HRP.AssemblyLinearVelocity.Z)
+        end
+    end
+end)
